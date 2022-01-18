@@ -1,29 +1,17 @@
 {
     "numberOfCronJobs": 3,
-    "cronTaskConfig": {
-        "jobConfig1": [
-            {
-                "jobname": "job1"
-            },
-            {
-                "schedule": "* * * * *"
-            }
-        ],
-        "jobConfig2": [
-            {
-                "jobname": "job2"
-            },
-            {
-                "schedule": "*/2 * * * *"
-            }
-        ],
-        "jobconfig3": [
-            {
-                "jobname": "job3"
-            },
-            {
-                "schedule": "*/3 * * * *"
-            }
-        ]
-    }
+    "cronTaskConfig": [
+        {
+            "jobname": "job1",
+            "schedule": "* * * * *"
+        },
+        {
+            "jobname": "job2",
+            "schedule": "*/2 * * * *"
+        },
+        {
+            "jobname": "job3",
+            "schedule": "*/3 * * * *"
+        }
+    ]
 }

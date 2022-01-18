@@ -232,16 +232,16 @@ async function run() {
  * 
  */ 
     // args.push("--set-file=configjson=config.json");
-    let jsonfile=require('/Users/kaustubh/city-mall-helm/helm-jobs/config.json');
-    var JSONFILE = JSON.parse(jsonfile);
+    let JSONFILE="config.json";
+    // var JSONFILE = JSON.parse(jsonfile);
     let number_of_jobs= JSONFILE.numberOfCronJobs;
     console.log(number_of_jobs);
     if (number_of_jobs > 0) {
       let totaljobs=[[number_of_jobs],[]];
       let totalschedules=[[number_of_jobs],[]];
       for (let step=0; step<number_of_jobs; step++) {
-        totaljobs[step].push(JSONFILE.cronTaskConfig[step][0].jobname);
-        totalschedules[step].push(JSONFILE.cronTaskConfig[step][1].schedule);
+        totaljobs[step].push(JSONFILE.cronTaskConfig[step].jobname);
+        totalschedules[step].push(JSONFILE.cronTaskConfig[step].schedule);
         console.log(totaljobs[step]);
       }
 
