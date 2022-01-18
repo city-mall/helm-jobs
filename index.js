@@ -234,6 +234,7 @@ async function run() {
     // args.push("--set-file=configjson=config.json");
     let JSONFILE='/config.json';
     let number_of_jobs= JSONFILE.numberOfCronJobs;
+    console.log(number_of_jobs);
     if (number_of_jobs > 0) {
       let totaljobs=[[number_of_jobs],[]];
       let totalschedules=[[number_of_jobs],[]];
@@ -244,26 +245,10 @@ async function run() {
       }
 
       for (let step=0; step<totaljobs.length; step++) {
-        args.push("--set=jobs.enabled=true", "--set=jobnamecron=totaljobs[step]", "--set=jobnameschedule=totalschedules[step]");
+        args.push("--set=jobs.enabled=true");
+        args.push("--set=jobnamecron=totaljobs[step]");
+        args.push("--set=jobnameschedule=totalschedules[step]");
       }
-
-      // for (let i=0; i<totaljobs.length; i++) {
-      //   let str ='values.yml';
-      //   let yawnname=new YAWN(str);
-      //   yawnname.json={
-      //     jobnamecron: "cronname"
-      //   };
-      //   console.log(yawnname.yaml);
-
-      //   let string ='values.yml';
-      //   let yawnschedule=new YAWN(string);
-      //   yawnschedule.json={
-      //     jobnameschedule: "schedule"
-      //   };
-      //   console.log(yawnschedule.yaml);
-
-      //   args.push("--set=jobs.enabled=true");
-      // }
     }
     // Special behaviour is triggered if the track is labelled 'canary'. The
     // service and ingress resources are disabled. Access to the canary
