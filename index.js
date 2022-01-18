@@ -8,7 +8,6 @@ const Mustache = require("mustache");
 const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);
 const required = { required: true };
-import YAWN from 'ywan-yaml';
 
 /**
  * Status marks the deployment status. Only activates if token is set as an
