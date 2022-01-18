@@ -232,7 +232,7 @@ async function run() {
  * 
  */ 
     // args.push("--set-file=configjson=config.json");
-    let JSONFILE='/config.json';
+    let JSONFILE=require('/Users/kaustubh/city-mall-helm/helm-jobs/config.json');
     let number_of_jobs= JSONFILE.numberOfCronJobs;
     console.log(number_of_jobs);
     if (number_of_jobs > 0) {
