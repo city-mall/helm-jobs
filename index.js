@@ -157,7 +157,7 @@ async function run() {
     const context = github.context;
     await status("pending");
     
-    const number_of_jobs = getInput("number_of_jobs");
+    // const number_of_jobs = getInput("number_of_jobs");
     const secretsCmd = getInput("secretsCmd") || "";
     const track = getInput("track") || "stable";
     const appName = getInput("release", required);
@@ -194,7 +194,7 @@ async function run() {
     core.debug(`param: timeout = "${timeout}"`);
     core.debug(`param: repository = "${repository}"`);
     core.debug(`param: atomic = "${atomic}"`);
-    core.debug(`param: number_of_jobs = "${number_of_jobs}"`);
+    // core.debug(`param: number_of_jobs = "${number_of_jobs}"`);
     // core.debug(`param: JSONFILE = "${JSON.stringify(JSONFILE)}"`); /** Might not be needed */
 
   
