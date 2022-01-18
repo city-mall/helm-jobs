@@ -232,13 +232,8 @@ async function run() {
  * 
  */ 
     // args.push("--set-file=configjson=config.json");
-    const fs = require('fs');
-
-    let rawdata = fs.readFileSync('config.json');
-    let JSONFILE = JSON.parse(rawdata);
-    console.log(student);
-
-    // let JSONFILE=require('/Users/kaustubh/city-mall-helm/helm-jobs/config.json');
+    let jsonfile=require('/Users/kaustubh/city-mall-helm/helm-jobs/config.json');
+    var JSONFILE = JSON.parse(jsonfile);
     let number_of_jobs= JSONFILE.numberOfCronJobs;
     console.log(number_of_jobs);
     if (number_of_jobs > 0) {
