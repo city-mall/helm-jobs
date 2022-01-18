@@ -232,7 +232,7 @@ async function run() {
  * 
  */ 
     // args.push("--set-file=configjson=config.json");
-    let JSONFILE='config.json';
+    let JSONFILE='/config.json';
     let number_of_jobs= JSONFILE.numberOfCronJobs;
     if (number_of_jobs > 0) {
       let totaljobs=[[number_of_jobs],[]];
