@@ -240,7 +240,9 @@ async function run() {
       for (let step=0; step<number_of_jobs; step++) {
         totaljobs[step].push(JSONFILE.cronTaskConfig[step][0].jobname);
         totalschedules[step].push(JSONFILE.cronTaskConfig[step][1].schedule);
+        console.log(totaljobs[step]);
       }
+
       for (let step=0; step<totaljobs.length; step++) {
         args.push("--set=jobs.enabled=true", "--set=jobnamecron=totaljobs[step]", "--set=jobnameschedule=totalschedules[step]");
       }
