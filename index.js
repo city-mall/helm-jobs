@@ -176,7 +176,7 @@ async function run() {
     const dryRun = core.getInput("dry-run");
     const secrets = getSecrets(core.getInput("secrets"));
     const atomic = getInput("atomic") || true;
-    const JSONFILE = getValueFiles(getInput("JSONFILE"));    /** Might not be needed */
+    // const JSONFILE = getValueFiles(getInput("JSONFILE"));    /** Might not be needed */
 
     core.debug(`param: track = "${track}"`);
     core.debug(`param: release = "${release}"`);
@@ -195,7 +195,7 @@ async function run() {
     core.debug(`param: repository = "${repository}"`);
     core.debug(`param: atomic = "${atomic}"`);
     core.debug(`param: number_of_jobs = "${number_of_jobs}"`);
-    core.debug(`param: JSONFILE = "${JSON.stringify(JSONFILE)}"`); /** Might not be needed */
+    // core.debug(`param: JSONFILE = "${JSON.stringify(JSONFILE)}"`); /** Might not be needed */
 
   
     // Setup command options and arguments.
