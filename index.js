@@ -231,33 +231,33 @@ async function run() {
  * Iterative logic for dynamic deployment of kubernetes cron jobs
  * 
  */ 
-    let JSONFILE = {
-      "numberOfCronJobs": 3,
-      "cronTaskConfig": [{
-              "jobname": "job1",
-              "schedule": "* * * * *"
-          }, {
-              "jobname": "job2",
-              "schedule": "*/2 * * * *"
-          }, {
-              "jobname": "job3",
-              "schedule": "*/3 * * * *"
-          }]
-    };
-    let number_of_jobs= JSONFILE.numberOfCronJobs;
-    console.log(number_of_jobs);
-    if (number_of_jobs > 0) {
-      let totaljobs=[[number_of_jobs],[]];
-      let totalschedules=[[number_of_jobs],[]];
-      for (let step=0; step<number_of_jobs; step++) {
-        totaljobs[step]= JSONFILE.cronTaskConfig[step].jobname;
-        totalschedules[step] = JSONFILE.cronTaskConfig[step].schedule;
-      }
-      args.push("--set=jobs.enabled=true");
-      for (let step=0; step<totaljobs.length; step++) {
-        args.push(`--set=jobnamecron=${totaljobs[step]}`, `--set=jobnameschedule=${totalschedules[step]}`);
-      }
-    }
+    // let JSONFILE = {
+    //   "numberOfCronJobs": 3,
+    //   "cronTaskConfig": [{
+    //           "jobname": "job1",
+    //           "schedule": "* * * * *"
+    //       }, {
+    //           "jobname": "job2",
+    //           "schedule": "*/2 * * * *"
+    //       }, {
+    //           "jobname": "job3",
+    //           "schedule": "*/3 * * * *"
+    //       }]
+    // };
+    // let number_of_jobs= JSONFILE.numberOfCronJobs;
+    // console.log(number_of_jobs);
+    // if (number_of_jobs > 0) {
+    //   let totaljobs=[[number_of_jobs],[]];
+    //   let totalschedules=[[number_of_jobs],[]];
+    //   for (let step=0; step<number_of_jobs; step++) {
+    //     totaljobs[step]= JSONFILE.cronTaskConfig[step].jobname;
+    //     totalschedules[step] = JSONFILE.cronTaskConfig[step].schedule;
+    //   }
+    //   args.push("--set=jobs.enabled=true");
+    //   for (let step=0; step<totaljobs.length; step++) {
+    //     args.push(`--set=jobnamecron=${totaljobs[step]}`, `--set=jobnameschedule=${totalschedules[step]}`);
+    //   }
+    // }
     // Special behaviour is triggered if the track is labelled 'canary'. The
     // service and ingress resources are disabled. Access to the canary
     // deployments can be routed via the main stable service resource.
