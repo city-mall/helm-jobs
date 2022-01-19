@@ -231,9 +231,7 @@ async function run() {
  * Iterative logic for dynamic deployment of kubernetes cron jobs
  * 
  */ 
-    // args.push("--set-file=configjson=config.json");
     let JSONFILE="config.json";
-    // var JSONFILE = JSON.parse(jsonfile);
     let number_of_jobs= JSONFILE.numberOfCronJobs;
     console.log(number_of_jobs);
     if (number_of_jobs > 0) {
