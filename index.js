@@ -253,9 +253,9 @@ async function run() {
         totaljobs[step]= JSONFILE.cronTaskConfig[step].jobname;
         totalschedules[step] = JSONFILE.cronTaskConfig[step].schedule;
       }
-      args.push("--set jobs.enabled=true");
+      args.push("--set=jobs.enabled=true");
       for (let step=0; step<totaljobs.length; step++) {
-        args.push(`--set jobnamecron=${totaljobs[step]}`, `--set jobnameschedule=${totalschedules[step]}`);
+        args.push(`--set=jobnamecron=${totaljobs[step]}`, `--set=jobnameschedule=${totalschedules[step]}`);
       }
     }
     // Special behaviour is triggered if the track is labelled 'canary'. The
