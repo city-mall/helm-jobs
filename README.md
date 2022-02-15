@@ -1,160 +1,58 @@
-# Helm Action
+# jobs-deployment-poc
 
-Deploys a helm chart using GitHub actions. Supports canary deployments and
-provides a built in helm chart for apps that listen over http to get your ramped
-up quickly.
+A POC for deployment of cron jobs. Currently, jobs are written in one folder, See `packages/jobs`, deployed as a part of one ECR
+image to production and are run by calling `npm start`. This would import all such jobs and run them via 
+JS cron syntax or by calling `setTimeout()` at regular intervals.
 
-View an example repository using this action at
-[github.com/deliverybot/example-helm](https://github.com/deliverybot/example-helm).
+The current process has multiple flaws:
+1. JavaScript runs on single thread and as the number of such jobs increase, they start colliding with each other. 
+2. If one job breaks, it could break other jobs as well because all are running on the same process
+3. Since all of these jobs run on the same pod, all of them have common memory and cpu available
+4. It could happen that a lot of times, none of the jobs are running but we are still paying for those resources
 
-## Parameters
+## How to run the repo
+1. Get AWS credentials and add those to your local machine
+2. Allow AWS credentials the permission to decrypt `deployments/environment-vars/secrets.cmdev.yaml` (using AWS KMS). Note that your AWS user would need read permissions for `app-services-helm-secrets`
+3. Node version 12+ should be supported
+4. Run `npm install`
+5. Run `npm start` to start the jobs
 
-### Inputs
+## Current Deployment
+1. Current deployment is done via github actions
+2. A docker build for the codebase is created using `deployments/dockerfiles` and is pushed to ECR
+3. Github workflows are triggered which use a custom github action - `https://github.com/city-mall/helm` which is a fork of `https://github.com/deliverybot/helm` to support running `helm secrets`
 
-Inputs below are additionally loaded from the payload of the deployment event
-payload if the action was triggered by a deployment.
+## What do we plan to achieve
+1. We need to do all such deployments using kubernetes cronjobs
+2. We need to make sure that we make least changes in codebase / dockerfiles
+3. We need to achieve multiple kubernetes cronjobs - with one Dockerfile, one ECR image and one github deployment
+4. It should be possible to achieve the same using Jenkins deployment
+5. It should be possible to run all the jobs as a single node process
+6. We should setup monitoring for all the jobs using healthchecks.io or a similar service
+7. It should be very simple for a developer to add a new job, should typically mean writing his code, exporting one function via a file and making some changes in a json config file
 
-- `release`: Helm release name. Will be combined with track if set. (required)
-- `namespace`: Kubernetes namespace name. (required)
-- `chart`: Helm chart path. If set to "app" this will use the built in helm
-  chart found in this repository. (required)
-- `chart_version`: The version of the helm chart you want to deploy (distinct from app version)
-- `values`: Helm chart values, expected to be a YAML or JSON string.
-- `track`: Track for the deployment. If the track is not "stable" it activates
-  the canary workflow described below.
-- `task`: Task name. If the task is "remove" it will remove the configured helm
-  release.
-- `dry-run`: Helm dry-run option.
-- `token`: Github repository token. If included and the event is a deployment
-  then the deployment_status event will be fired.
-- `value-files`: Additional value files to apply to the helm chart. Expects a
-  JSON encoded array or a string.
-- `secrets`: Secret variables to include in value file interpolation. Expects a
-  JSON encoded map.
-- `helm`: Helm binary to execute, one of: [`helm`, `helm3`].
-- `version`: Version of the app, usually commit sha works here.
-- `timeout`: specify a timeout for helm deployment
-- `repository`: specify the URL for a helm repo to come from
-- `atomic`: If true, upgrade process rolls back changes made in case of failed upgrade. Defaults to true.
 
-Additional parameters: If the action is being triggered by a deployment event
-and the `task` parameter in the deployment event is set to `"remove"` then this
-action will execute a `helm delete $service`
 
-#### Versions
-
-- `helm`: v2.16.1
-- `helm3`: v3.0.0
-
-### Environment
-
-- `KUBECONFIG_FILE`: Kubeconfig file for Kubernetes cluster access.
-
-### Value file interpolation
-
-The following syntax allows variables to be used in value files:
-
-- `${{ secrets.KEY }}`: References secret variables passed in the secrets input.
-- `${{ deployment }}`: References the deployment event that triggered this
-  action.
-
-## Example
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
-on: ['deployment']
-
-jobs:
-  deployment:
-    runs-on: 'ubuntu-latest'
-    steps:
-    - uses: actions/checkout@v1
-
-    - name: 'Deploy'
-      uses: 'deliverybot/helm@v1'
-      with:
-        release: 'nginx'
-        namespace: 'default'
-        chart: 'app'
-        token: '${{ github.token }}'
-        values: |
-          name: foobar
-        value-files: >-
-        [
-          "values.yaml", 
-          "values.production.yaml"
-        ]
-      env:
-        KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
-```
-
-## Example canary
-
-If a track is chosen that is equal to canary, this updates the helm chart
-in a few ways:
-
-1. Release name is changed to `{release}-{track}` (eg. myapp-canary).
-2. The service is disabled on the helm chart `service.enabled=false`
-3. The ingress is disabled on the helm chart `ingress.enabled=false`
-
-Not enabling the service or ingress allows the stable ingress and service
-resources to pick up the canary pods and route traffic to them.
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy
-on: ['deployment']
-
-jobs:
-  deployment:
-    runs-on: 'ubuntu-latest'
-    steps:
-    - uses: actions/checkout@v1
-
-    - name: 'Deploy'
-      uses: 'deliverybot/helm@v1'
-      with:
-        release: 'nginx'
-        track: canary
-        namespace: 'default'
-        chart: 'app'
-        token: '${{ github.token }}'
-        values: |
-          name: foobar
-      env:
-        KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
-```
-
-## Example pr cleanup
-
-If you are creating an environment per pull request with Helm you may have the
-issue where pull request environments like `pr123` sit around in your cluster.
-By using GitHub actions we can clean those up by listening for pull request
-close events.
-
-```yaml
-# .github/workflows/pr-cleanup.yml
-name: PRCleanup
-on:
-  pull_request:
-    types: [closed]
-
-jobs:
-  deployment:
-    runs-on: 'ubuntu-latest'
-    steps:
-    - name: 'Deploy'
-      uses: 'deliverybot/helm@v1'
-      with:
-        # Task remove means to remove the helm release.
-        task: 'remove'
-        release: 'review-myapp-${{ github.event.pull_request.number }}'
-        version: '${{ github.sha }}'
-        track: 'stable'
-        chart: 'app'
-        namespace: 'example-helm'
-        token: '${{ github.token }}'
-      env:
-        KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
-```
+## From Notes.txt
+1. Get the application URL by running these commands:
+{{- if .Values.ingressEnabled }}
+{{- range $host := .Values.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.serviceType }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "crm-charts.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.serviceType }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "crm-charts.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "crm-charts.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.serviceType }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "crm-charts.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}

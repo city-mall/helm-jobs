@@ -1,0 +1,116 @@
+name: 'staging:jobs-poc'
+
+env:
+  GITHUB_ENV: cmdev
+  CLUSTER: cs
+  AWS_REGION: ap-south-1
+  APP_NAME: jobs-poc
+  APP_NAMESPACE: jobs-poc
+  VERSION_HELM: v3.5.0
+  VERSION_SOPS: v3.7.0
+  DOCKER_FILE: deployments/dockerfiles/jobsServer.Dockerfile
+  SECRETS_FILE: deployments/helm/secrets.cmdev.yaml
+  CONFIG_FILE: deployments/helm/config.cmdev.yaml
+  JSONFILE: packages/jobs/src/config.json
+  INGRESS_ENABLED: false
+  HOST: ''
+  SECRET_NAME: ''
+  SERVICE_ENABLED: false
+  SERVICE_PORT: ''
+  LIVENESS_ENABLED: false
+  LIVENESS_ENDPOINT: ''
+  READINESS_ENABLED: false
+  READINESS_ENDPOINT: ''
+  CACHE_NAME: node
+
+on: 'workflow_dispatch'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_and_push:
+    environment: cmdev
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v2'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+        with:
+          length: 6
+  deploy:
+    runs-on: 'ubuntu-latest'
+    environment: cmdev
+    needs: build_and_push
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v2'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v1.1
+        with:
+          version: ${{ env.VERSION_HELM }}
+
+      - name: Setup Sops
+        uses: mdgreenwald/mozilla-sops-action@v1
+        with:
+          version: ${{ env.VERSION_SOPS }}
+
+      - name: helm plugin install
+        run: |
+          plugins=$(helm plugin list)
+          if [[ $plugins == *"3.6.0"* ]] && [[ $plugins == *"secrets"* ]]; then
+            echo "It's there!"
+          else
+            helm plugin install https://github.com/jkroepke/helm-secrets --version v3.6.0
+          fi
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+        with:
+          length: 6
+
+      # - name: 'helm install'
+      #   uses: 'city-mall/helm@master'
+      #   with:
+      #     secretsCmd: secrets
+      #     helm: helm
+      #     token: '${{ github.token }}'
+      #     secrets: '${{ toJSON(secrets) }}'
+      #     version: '${{ steps.chart.outputs.appVersion }}'
+      #     chart: './deployments/helm'
+      #     namespace: ${{ env.APP_NAMESPACE }}
+      #     release: ${{ env.APP_NAME }}
+      #     # values: |
+      #     value-files: >-
+      #       [
+      #         "${{ env.SECRETS_FILE }}",
+      #         "${{ env.CONFIG_FILE }}"
+      #       ]
+      #   env:
+      #     KUBECONFIG_FILE: '${{ secrets.KUBECONFIG_STAGING }}'

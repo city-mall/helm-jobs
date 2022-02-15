@@ -1,0 +1,49 @@
+{{- if .Values.jobsEnabled }}
+{{- range $key, $value := .Values.jobnamecron }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ $key | quote }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    jobname: {{ $key | quote }}
+    schedule: {{ $value | quote }}
+spec:
+  schedule: {{ $value | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cron-container
+            image: "414085459896.dkr.ecr.ap-south-1.amazonaws.com/cs/jobs-poc:cmdev-c730d4"
+            imagePullPolicy: Always
+            
+            command: ["/bin/sh", "-c"]
+            args:
+              - cd ~;
+                file="/parameter.json";
+                echo "{"'"jobname"'":"'"'${JOBNAMECRON}'"'"}" > $file;
+                chmod +x /parameter.json;
+                cd /usr/src/app;
+                npm --prefix packages/jobs start;
+            env:
+              - name: JOB_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.annotations['jobname']
+              - name: JOBNAMECRON
+                value: {{ $key | quote }}
+              - name: JOB_SCHEDULE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.annotations['schedule']
+          terminationGracePeriodSeconds: 60
+          restartPolicy: "OnFailure"
+
+      parallelism: 3
+      completions: 2
+  concurrencyPolicy: "Allow"
+---
+{{- end }}
+{{- end }}
