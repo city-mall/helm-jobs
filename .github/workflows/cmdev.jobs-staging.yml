@@ -67,23 +67,3 @@ jobs:
         id: short-sha
         with:
           length: 6
-
-      # - name: 'helm install'
-      #   uses: 'city-mall/helm@master'
-      #   with:
-      #     secretsCmd: secrets
-      #     helm: helm
-      #     token: '${{ github.token }}'
-      #     secrets: '${{ toJSON(secrets) }}'
-      #     version: '${{ steps.chart.outputs.appVersion }}'
-      #     chart: './deployments/helm'
-      #     namespace: ${{ env.APP_NAMESPACE }}
-      #     release: ${{ env.APP_NAME }}
-      #     # values: |
-      #     value-files: >-
-      #       [
-      #         "${{ env.SECRETS_FILE }}",
-      #         "${{ env.CONFIG_FILE }}"
-      #       ]
-      #   env:
-      #     KUBECONFIG_FILE: '${{ secrets.KUBECONFIG_STAGING }}'
