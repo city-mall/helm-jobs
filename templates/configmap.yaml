@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "crm-charts.labels" . | nindent 4 }}
+data:
+  NODE_ENV: production
+  DATABASE_URL: ENC[AES256_GCM,data:LDf7cebi0TvuewFiT/RESrz7QExvS7ig60NuoUy47Ttmvj+M5U3IEB0YxTIEc141,iv:c8nGvYJ/6RRGX7CLGptAh30FsP8kfT4RtkZNfECC5XE=,tag:XXPbOqMhyv312DRkMBwGBw==,type:str]
